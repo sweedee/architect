@@ -1,4 +1,4 @@
-import { useCallback, useRef, type DragEvent } from 'react'
+import { useCallback, useMemo, useRef, useState, type DragEvent } from 'react'
 import {
   Background,
   Controls,
@@ -9,9 +9,13 @@ import {
 import '@xyflow/react/dist/style.css'
 import { Palette, PALETTE_DRAG_TYPE } from './components/Palette'
 import { ComponentNode } from './components/ComponentNode'
+import { RequirementsPanel } from './components/RequirementsPanel'
+import { ValidationPanel } from './components/ValidationPanel'
 import { COMPONENT_BY_KIND } from './data/components'
+import { SCENARIOS } from './data/scenarios'
+import { runValidation } from './engine/validate'
 import { useGraphStore, type ArchitectureNode } from './store/useGraphStore'
-import type { ComponentKind } from './types'
+import type { ComponentKind, ValidationReport } from './types'
 
 const nodeTypes = { component: ComponentNode }
 
@@ -74,12 +78,49 @@ function Canvas() {
 }
 
 export default function App() {
+  const [scenarioId, setScenarioId] = useState(SCENARIOS[0].id)
+  const scenario = useMemo(
+    () => SCENARIOS.find((s) => s.id === scenarioId) ?? SCENARIOS[0],
+    [scenarioId],
+  )
+  const [report, setReport] = useState<ValidationReport | null>(null)
+  const nodes = useGraphStore((s) => s.nodes)
+  const edges = useGraphStore((s) => s.edges)
+
+  const handleRun = useCallback(() => {
+    setReport(runValidation(nodes, edges, scenario))
+  }, [nodes, edges, scenario])
+
   return (
     <div className="flex h-screen w-screen">
       <ReactFlowProvider>
         <Palette />
         <Canvas />
       </ReactFlowProvider>
+
+      <div className="flex w-72 shrink-0 flex-col border-l border-slate-200 bg-white">
+        <div className="border-b border-slate-200 p-3">
+          <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Scenario
+          </label>
+          <select
+            className="mt-1 w-full rounded border border-slate-300 p-1.5 text-sm"
+            value={scenarioId}
+            onChange={(event) => {
+              setScenarioId(event.target.value)
+              setReport(null)
+            }}
+          >
+            {SCENARIOS.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.title}
+              </option>
+            ))}
+          </select>
+        </div>
+        <RequirementsPanel scenario={scenario} />
+        <ValidationPanel report={report} onRun={handleRun} />
+      </div>
     </div>
   )
 }
