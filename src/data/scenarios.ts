@@ -29,4 +29,32 @@ export const SCENARIOS: Scenario[] = [
     },
     passingScore: 70,
   },
+  {
+    id: 'media-streaming',
+    title: 'Media Streaming Site',
+    description:
+      'A site that serves images and video to a huge, read-heavy audience. Static assets dominate traffic, so caching at the edge is essential.',
+    requirements: {
+      writesPerSecond: 100,
+      readsPerSecond: 20000,
+      uptimeSlaPercent: 99.95,
+      consistency: 'eventual',
+      budgetPerMonth: 700,
+    },
+    passingScore: 70,
+  },
+  {
+    id: 'analytics-ingest',
+    title: 'Analytics Ingestion Pipeline',
+    description:
+      'A firehose of write-heavy event data from clients. Spikes must be absorbed asynchronously so the database is never overwhelmed.',
+    requirements: {
+      writesPerSecond: 15000,
+      readsPerSecond: 500,
+      uptimeSlaPercent: 99.9,
+      consistency: 'eventual',
+      budgetPerMonth: 800,
+    },
+    passingScore: 70,
+  },
 ]
